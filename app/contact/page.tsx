@@ -107,7 +107,10 @@ export default function ContactPage() {
           </div>
 
           <Reveal direction="left" delay={0.1}>
-            <ContactForm />
+            <ContactForm
+              source="contact-page"
+              formName="Contact form"
+            />
           </Reveal>
         </div>
       </Container>

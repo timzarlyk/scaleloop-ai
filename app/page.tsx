@@ -288,7 +288,10 @@ export default function Home() {
               </div>
             </Reveal>
             <Reveal direction="left" delay={0.1}>
-              <ContactForm />
+              <ContactForm
+                source="main-site"
+                formName="Main contact form"
+              />
             </Reveal>
           </div>
         </Container>

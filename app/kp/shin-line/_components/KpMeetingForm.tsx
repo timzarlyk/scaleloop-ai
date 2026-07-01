@@ -1,8 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { usePathname } from "next/navigation";
 import Button from "@/components/Button";
 import { cn } from "@/lib/cn";
+import {
+  LEAD_ERROR_MESSAGE,
+  LEAD_SUCCESS_MESSAGE,
+  submitLead,
+} from "@/lib/client/submitLead";
 import { ctaQuestions } from "./data";
 import { KpHeading, KpSection } from "./ui";
 
@@ -14,6 +20,18 @@ type FormState = {
   datetime: string;
   location: string;
   comment: string;
+  website: string;
+};
+
+const emptyForm: FormState = {
+  name: "",
+  position: "",
+  phone: "",
+  email: "",
+  datetime: "",
+  location: "",
+  comment: "",
+  website: "",
 };
 
 type FieldKey = keyof FormState;
@@ -31,15 +49,8 @@ function minDatetimeLocal(): string {
 }
 
 export default function KpMeetingForm() {
-  const [form, setForm] = useState<FormState>({
-    name: "",
-    position: "",
-    phone: "",
-    email: "",
-    datetime: "",
-    location: "",
-    comment: "",
-  });
+  const pathname = usePathname();
+  const [form, setForm] = useState<FormState>(emptyForm);
   const [errors, setErrors] = useState<Partial<Record<FieldKey, string>>>({});
   const [submitError, setSubmitError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -94,30 +105,29 @@ export default function KpMeetingForm() {
     setErrors({});
 
     try {
-      const res = await fetch("/api/shin-line-meeting", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...form,
-          source: "shin-line-proposal-meeting",
-        }),
+      const result = await submitLead({
+        source: "shin-line-proposal",
+        page: pathname,
+        formName: "Shin-Line meeting request",
+        name: form.name,
+        phone: form.phone,
+        email: form.email,
+        position: form.position,
+        meetingDateTime: form.datetime,
+        meetingPlace: form.location,
+        message: form.comment,
+        website: form.website,
       });
 
-      const data = (await res.json()) as { error?: string };
-
-      if (!res.ok) {
-        setSubmitError(
-          data.error ||
-            "Не удалось отправить заявку. Проверьте данные или попробуйте позже."
-        );
+      if (!result.success) {
+        setSubmitError(result.error || LEAD_ERROR_MESSAGE);
         return;
       }
 
+      setForm(emptyForm);
       setSuccess(true);
     } catch {
-      setSubmitError(
-        "Не удалось отправить заявку. Проверьте данные или попробуйте позже."
-      );
+      setSubmitError(LEAD_ERROR_MESSAGE);
     } finally {
       setLoading(false);
     }
@@ -178,8 +188,7 @@ export default function KpMeetingForm() {
                   </svg>
                 </div>
                 <p className="mt-5 text-base font-medium leading-relaxed text-slate-800">
-                  Спасибо. Данные отправлены. Мы свяжемся с вами для
-                  подтверждения деталей.
+                  {LEAD_SUCCESS_MESSAGE}
                 </p>
               </div>
             ) : (
@@ -188,6 +197,17 @@ export default function KpMeetingForm() {
                 onSubmit={handleSubmit}
                 className="space-y-4"
               >
+                <input
+                  type="text"
+                  name="website"
+                  value={form.website}
+                  onChange={update("website")}
+                  tabIndex={-1}
+                  autoComplete="off"
+                  aria-hidden
+                  className="pointer-events-none absolute -left-[9999px] h-0 w-0 opacity-0"
+                />
+
                 <div className="grid gap-4 sm:grid-cols-2">
                   <Field
                     {...fieldProps("name", "Имя", true)}

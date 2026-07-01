@@ -1,36 +1,93 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Button from "./Button";
 import { Icon } from "./icons";
 import { cn } from "@/lib/cn";
+import {
+  LEAD_ERROR_MESSAGE,
+  LEAD_SUCCESS_MESSAGE,
+  submitLead,
+} from "@/lib/client/submitLead";
 
 const fieldClass =
   "w-full rounded-2xl glass-subtle px-4 py-3 text-sm text-ink placeholder:text-faint outline-none transition-all duration-300 focus:border-accent/50 focus:bg-white focus:ring-4 focus:ring-accent/15";
 
+const emptyForm = {
+  name: "",
+  company: "",
+  phone: "",
+  message: "",
+  website: "",
+};
+
 export default function ContactForm({
   submitLabel = "Получить разбор",
   className,
+  source = "main-site",
+  formName = "Contact form",
 }: {
   submitLabel?: string;
   className?: string;
+  source?: string;
+  formName?: string;
 }) {
+  const pathname = usePathname();
   const [submitted, setSubmitted] = useState(false);
-  const [form, setForm] = useState({
-    name: "",
-    company: "",
-    phone: "",
-    message: "",
-  });
+  const [loading, setLoading] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+  const [form, setForm] = useState(emptyForm);
 
-  function update(key: keyof typeof form) {
-    return (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+  function update(key: keyof typeof emptyForm) {
+    return (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       setForm((f) => ({ ...f, [key]: e.target.value }));
+      setSubmitError("");
+    };
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (loading || submitted) return;
+
+    if (!form.name.trim()) {
+      setSubmitError("Укажите имя.");
+      return;
+    }
+
+    if (!form.phone.trim()) {
+      setSubmitError("Укажите телефон.");
+      return;
+    }
+
+    if (form.phone.replace(/\D/g, "").length < 10) {
+      setSubmitError("Укажите корректный номер телефона.");
+      return;
+    }
+
+    setLoading(true);
+    setSubmitError("");
+
+    const result = await submitLead({
+      source,
+      page: pathname,
+      formName,
+      name: form.name,
+      company: form.company,
+      phone: form.phone,
+      message: form.message,
+      website: form.website,
+    });
+
+    setLoading(false);
+
+    if (!result.success) {
+      setSubmitError(result.error || LEAD_ERROR_MESSAGE);
+      return;
+    }
+
+    setForm(emptyForm);
     setSubmitted(true);
   }
 
@@ -56,9 +113,7 @@ export default function ContactForm({
               Заявка отправлена
             </h3>
             <p className="mt-2 max-w-sm text-sm leading-relaxed text-muted">
-              Спасибо, {form.name || "коллега"}. Свяжемся с вами, проведём
-              короткий разбор и предложим 1–2 пилота, которые можно запустить без
-              большой перестройки.
+              {LEAD_SUCCESS_MESSAGE}
             </p>
           </motion.div>
         ) : (
@@ -68,15 +123,26 @@ export default function ContactForm({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onSubmit={handleSubmit}
+            noValidate
             className="relative space-y-4"
           >
+            <input
+              type="text"
+              name="website"
+              value={form.website}
+              onChange={update("website")}
+              tabIndex={-1}
+              autoComplete="off"
+              aria-hidden
+              className="pointer-events-none absolute -left-[9999px] h-0 w-0 opacity-0"
+            />
+
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label className="mb-1.5 block text-xs font-medium text-muted">
                   Имя
                 </label>
                 <input
-                  required
                   value={form.name}
                   onChange={update("name")}
                   placeholder="Как к вам обращаться"
@@ -100,7 +166,6 @@ export default function ContactForm({
                 Телефон / WhatsApp
               </label>
               <input
-                required
                 type="tel"
                 value={form.phone}
                 onChange={update("phone")}
@@ -120,8 +185,21 @@ export default function ContactForm({
                 className={cn(fieldClass, "resize-none")}
               />
             </div>
-            <Button type="submit" size="lg" withArrow className="w-full">
-              {submitLabel}
+
+            {submitError ? (
+              <p className="rounded-xl bg-red-50/80 px-4 py-3 text-sm text-red-700">
+                {submitError}
+              </p>
+            ) : null}
+
+            <Button
+              type="submit"
+              size="lg"
+              withArrow
+              className="w-full"
+              disabled={loading}
+            >
+              {loading ? "Отправляем..." : submitLabel}
             </Button>
             <p className="text-center text-xs text-faint">
               Нажимая кнопку, вы соглашаетесь на обработку контактных данных.
