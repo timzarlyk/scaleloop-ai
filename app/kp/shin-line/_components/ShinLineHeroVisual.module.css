@@ -1,0 +1,63 @@
+.card {
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+}
+
+.svgWrap {
+  width: 100%;
+  aspect-ratio: 720 / 520;
+  max-height: 340px;
+}
+
+@media (max-width: 639px) {
+  .svgWrap {
+    max-height: 260px;
+  }
+}
+
+.connectLine {
+  stroke-dasharray: 6 4;
+  animation: shin-line-draw 2s ease-out forwards;
+}
+
+.centerGlow {
+  animation: shin-line-glow 4s ease-in-out infinite;
+}
+
+@keyframes shin-line-glow {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 0.75;
+  }
+}
+
+@keyframes shin-line-draw {
+  from {
+    stroke-dashoffset: 24;
+    opacity: 0.35;
+  }
+  to {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .connectLine,
+  .centerGlow {
+    animation: none;
+  }
+
+  .connectLine {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
