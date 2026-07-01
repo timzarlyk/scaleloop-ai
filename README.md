@@ -1,36 +1,75 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# OpsForge
 
-## Getting Started
+Премиальный сайт для компании по разработке цифровых операционных систем для бизнеса:
+CRM, ERP/MES-модули, BI-дашборды, AI-аналитика, Traceability/HACCP и внутренние платформы.
 
-First, run the development server:
+> **Позиционирование:** «Разрабатываем цифровые системы для компаний, где рост зависит от управляемости процессов».
+> Мы не продаём разработку ради разработки — находим, где бизнес теряет деньги в процессах, и закрываем эту потерю цифровой системой.
+
+## Технологии
+
+- **Next.js 16** (App Router) + **React 19**
+- **Tailwind CSS v4** (дизайн-токены в `app/globals.css`)
+- **Framer Motion** — плавные reveal-анимации и микроанимации
+- **TypeScript**, mobile-first, компонентная структура, без лишних библиотек
+
+## Запуск
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev      # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+```bash
+npm run build    # production-сборка
+npm run start    # запуск собранного приложения
+npm run lint     # проверка ESLint
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Структура
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+app/
+  layout.tsx                       # Root layout: шрифты, метаданные, Header/Footer
+  globals.css                      # Дизайн-система: цвета, утилиты, анимации
+  page.tsx                         # Главная (10 секций)
+  solutions/page.tsx               # Каталог решений
+  solutions/[slug]/page.tsx        # Страница решения (data-driven, 8 шт.)
+  industries/page.tsx              # Каталог отраслей
+  industries/food-production/      # Специализированная страница (пищевые производства)
+  process/page.tsx                 # Методология (Discovery → Continuous Improvement)
+  contact/page.tsx                 # Заявка + WhatsApp/Email
+  not-found.tsx                    # 404
+components/
+  Header, Footer, Logo
+  Button, SectionLabel, Badge, Container, Reveal, BackgroundFX, Section, PageHero
+  SolutionCard, IndustryCard, ProcessStep, MetricCard, FeatureTile, CheckList
+  HeroDiagram                      # Анимированный «цифровой контур» компании
+  CTASection, ContactForm
+  icons.tsx                        # Набор inline SVG-иконок
+lib/
+  site.ts            # Контакты, навигация, позиционирование
+  solutions.ts       # Контент всех решений (источник правды для страниц)
+  industries.ts      # Отрасли
+  content.ts         # Контент главной и методологии
+  accent.ts          # Акцентные цвета (полные классы для Tailwind)
+  cn.ts              # Утилита объединения классов
+```
 
-## Learn More
+## Дизайн
 
-To learn more about Next.js, take a look at the following resources:
+- Глубокий графитовый фон, акценты electric blue / cyan / lime / amber
+- Glassmorphism-карточки, soft borders, subtle glow, фоновые градиентные blobs и сетка
+- Крупная типографика, много воздуха, аккуратные hover- и scroll-анимации
+- Идеальная адаптивность: mobile / tablet / desktop
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Как добавить новое решение
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Добавьте объект в массив `solutions` в `lib/solutions.ts` — страница `/solutions/<slug>`
+сгенерируется автоматически (включая метаданные и статический рендер).
 
-## Deploy on Vercel
+## Заметки
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Форма заявки сейчас работает на стороне клиента (демо). Для продакшена подключите
+  обработчик (API route / внешний сервис) в `components/ContactForm.tsx`.
+- Контакты-заглушки (email, WhatsApp) заданы в `lib/site.ts`.
